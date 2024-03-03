@@ -1,15 +1,69 @@
 const express = require('express');
+const fs = require('fs');
 const app = express();
 
-app.get('/', (req, res) => {
-  res
-    .status(200)
-    .json({ message: 'Hello from the server', author: 'SUJAY GOWDA' });
+app.use(express.json()); // express middleware: Basically a function to modify incoming request data, this is called middleware because it stands between req and res.
+
+// app.get('/', (req, res) => {
+//   res
+//     .status(200)
+//     .json({ message: 'Hello from the server', author: 'SUJAY GOWDA' });
+// });
+
+// app.post('/', (req, res) => {
+//   res.send('You can post to this URL');
+// });
+
+const tours = JSON.parse(
+  fs.readFileSync(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    'utf-8',
+    (err, data) => {
+      return data;
+    }
+  )
+);
+
+app.get('/api/v1/tours', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      tours,
+    },
+  });
+  res.end(tours);
 });
 
-app.post('/', (req, res) => {
-  res.send('You can post to this URL');
-});
+app.post('/api/v1/tours', (req, res) => {
+  const tour = req.body;
+  const newId = tours[tours.length - 1].id + 1;
+  const newTour = {
+    id: newId,
+    ...tour,
+  };
+  tours.push(newTour);
+  fs.writeFile(
+    // When synchronous code is used within a callback function in Node.js, it can block the event loop, causing performance issues and potentially leading to poor scalability and responsiveness of the application. This is because while synchronous code is being executed, the event loop is unable to handle other tasks, such as responding to incoming requests or performing other asynchronous operations.
+
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(tours), // JSON stands for JavaScript Object Notation. It's a lightweight data interchange format that is easy for both humans to read and write and for machines to parse and generate. However, when you're transmitting data over the network, it needs to be in the form of strings. Stringifying JSON converts JavaScript objects into JSON strings, making them suitable for transmission.
+    (err) => {
+      if (err) {
+        console.log('Error writing data', err);
+        res.status(500).json({
+          status: 'Failed',
+          message: 'Error writing data',
+        });
+      } else {
+        res.status(201).json({
+          status: 'success',
+          data: newTour,
+        });
+      }
+    }
+  );
+}); // out of the box express doesn't return client data to the request, so in order to get the data we have to use middleware.
 
 const port = 3000;
 app.listen(port, () => {
