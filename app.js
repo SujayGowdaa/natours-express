@@ -81,6 +81,38 @@ app.post('/api/v1/tours', (req, res) => {
   );
 }); // out of the box express doesn't return client data to the request, so in order to get the data we have to use middleware.
 
+app.patch('/api/v1/tours/:id', (req, res) => {
+  if (req.params.id * 1 > tours.length) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'No data to update',
+    });
+  } else {
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: 'Updated tour here...',
+      },
+    });
+  }
+});
+
+app.delete('/api/v1/tours/:id', (req, res) => {
+  if (req.params.id * 1 > tours.length) {
+    res.status(404).json({
+      status: 'fail',
+      message: 'No data to delete',
+    });
+  } else {
+    res.status(204).json({
+      status: 'success',
+      data: {
+        data: null,
+      },
+    });
+  }
+});
+
 const port = 3000;
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
