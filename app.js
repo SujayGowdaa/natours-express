@@ -4,16 +4,6 @@ const app = express();
 
 app.use(express.json()); // express middleware: Basically a function to modify incoming request data, this is called middleware because it stands between req and res.
 
-// app.get('/', (req, res) => {
-//   res
-//     .status(200)
-//     .json({ message: 'Hello from the server', author: 'SUJAY GOWDA' });
-// });
-
-// app.post('/', (req, res) => {
-//   res.send('You can post to this URL');
-// });
-
 const tours = JSON.parse(
   fs.readFileSync(
     `${__dirname}/dev-data/data/tours-simple.json`,
@@ -24,7 +14,7 @@ const tours = JSON.parse(
   )
 );
 
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
     results: tours.length,
@@ -33,9 +23,8 @@ app.get('/api/v1/tours', (req, res) => {
     },
   });
   res.end(tours);
-});
-
-app.get('/api/v1/tours/:id', (req, res) => {
+};
+const getTour = (req, res) => {
   const tour = tours.find((el) => el.id === Number(req.params.id));
 
   if (!tour) {
@@ -49,9 +38,8 @@ app.get('/api/v1/tours/:id', (req, res) => {
       data: tour,
     });
   }
-});
-
-app.post('/api/v1/tours', (req, res) => {
+};
+const createTour = (req, res) => {
   const tour = req.body;
   const newId = tours[tours.length - 1].id + 1;
   const newTour = {
@@ -79,9 +67,8 @@ app.post('/api/v1/tours', (req, res) => {
       }
     }
   );
-}); // out of the box express doesn't return client data to the request, so in order to get the data we have to use middleware.
-
-app.patch('/api/v1/tours/:id', (req, res) => {
+};
+const updateTour = (req, res) => {
   if (req.params.id * 1 > tours.length) {
     res.status(404).json({
       status: 'fail',
@@ -95,9 +82,8 @@ app.patch('/api/v1/tours/:id', (req, res) => {
       },
     });
   }
-});
-
-app.delete('/api/v1/tours/:id', (req, res) => {
+};
+const deleteTour = (req, res) => {
   if (req.params.id * 1 > tours.length) {
     res.status(404).json({
       status: 'fail',
@@ -111,7 +97,21 @@ app.delete('/api/v1/tours/:id', (req, res) => {
       },
     });
   }
-});
+};
+
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.post('/api/v1/tours', createTour); // out of the box express doesn't return client data to the request, so in order to get the data we have to use middleware.
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+
+// alternative way of declaring routes
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+app
+  .route('/api/v1/tours/:id')
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
 
 const port = 3000;
 app.listen(port, () => {
