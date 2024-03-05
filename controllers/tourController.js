@@ -16,7 +16,7 @@ const getAllTours = async (req, res) => {
   } catch (err) {
     res.status(404).json({
       status: 'fail',
-      data: err.message,
+      message: err,
     });
   }
 };
@@ -31,7 +31,7 @@ const getTour = async (req, res) => {
   } catch (err) {
     res.status(404).json({
       status: 'fail',
-      data: err.message,
+      message: err,
     });
   }
 };
@@ -50,18 +50,29 @@ const createTour = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: 'fail',
-      data: err.message,
+      message: err,
     });
   }
 };
 
-const updateTour = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      data: 'Updated tour here...',
-    },
-  });
+const updateTour = async (req, res) => {
+  try {
+    const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true, // Return the updated document after the update operation
+      runValidators: true, // Run validators (specified in the schema) on the updated data
+    });
+    res.status(200).json({
+      status: 'success',
+      data: {
+        data: updatedTour,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
 const deleteTour = (req, res) => {

@@ -9,7 +9,7 @@ const app = express();
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-console.log(process.env.NODE_ENV);
+
 app.use(express.json()); // express middleware: Basically a function to modify incoming req uest data, this is called middleware because it stands between req and res.
 app.use(express.static(`${__dirname}/public/`));
 
