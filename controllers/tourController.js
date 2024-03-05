@@ -3,21 +3,37 @@ const Tour = require('../models/tourModels');
 // Handling Requests
 // Tours
 
-const getAllTours = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    // results: tours.length,
-    // data: {
-    //   tours,
-    // },
-  });
+const getAllTours = async (req, res) => {
+  try {
+    const tours = await Tour.find();
+    res.status(200).json({
+      status: 'success',
+      results: tours.length,
+      data: {
+        tours,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      data: err.message,
+    });
+  }
 };
-const getTour = (req, res) => {
-  // const tour = tours.find((el) => el.id === Number(req.params.id));
-  res.status(200).json({
-    status: 'success',
-    // data: tour,
-  });
+const getTour = async (req, res) => {
+  try {
+    const tour = await Tour.findById(req.params.id); // findyID is a short hand of findOne()
+    // to make the same request using findOne() method = Tour.findOne({_id:req.params.id})
+    res.status(200).json({
+      status: 'success',
+      data: tour,
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      data: err.message,
+    });
+  }
 };
 
 const createTour = async (req, res) => {
