@@ -1,10 +1,9 @@
 // Import required modules
-const mongoose = require('mongoose'); // Mongoose for MongoDB
-const dotenv = require('dotenv'); // dotenv for environment variables
-const app = require('./app'); // Custom application module
-
+const dotenv = require('dotenv'); // dotenv for environment variables, call before importing other modules ensures that environment variables are properly set up and available for use throughout the application.
 // Load environment variables from config file
 dotenv.config({ path: './config.env' });
+const mongoose = require('mongoose'); // Mongoose for MongoDB
+const app = require('./app'); // Custom application module
 
 // Replace the placeholder in the database connection string with the actual password
 const DB = process.env.DATABASE.replace(

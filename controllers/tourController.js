@@ -5,7 +5,23 @@ const Tour = require('../models/tourModels');
 
 const getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    // filters
+    const { page, limit, sort, ...rest } = { ...req.query };
+
+    // advanced filters
+    let queryObj = req.query;
+    // Convert the JavaScript object `queryObj` into a JSON string representation
+    // This is done to manipulate the query as a string
+    queryObj = JSON.stringify(queryObj).replace(
+      // Regular expression pattern to match shorthand query operators as whole words
+      /\b(gt|gte|lt|lte)\b/g,
+      // Callback function to replace matched words with MongoDB query operators
+      (match) => `$${match}`,
+    );
+    console.log(queryObj);
+    const query = Tour.find(JSON.parse(queryObj)); // passing filters
+    const tours = await query;
+
     res.status(200).json({
       status: 'success',
       results: tours.length,
