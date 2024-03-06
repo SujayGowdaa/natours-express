@@ -26,7 +26,9 @@ const getTour = async (req, res) => {
     // to make the same request using findOne() method = Tour.findOne({_id:req.params.id})
     res.status(200).json({
       status: 'success',
-      data: tour,
+      data: {
+        tour,
+      },
     });
   } catch (err) {
     res.status(404).json({
@@ -45,7 +47,9 @@ const createTour = async (req, res) => {
     const newTour = await Tour.create(req.body);
     res.status(201).json({
       status: 'success',
-      data: newTour,
+      data: {
+        newTour,
+      },
     });
   } catch (err) {
     res.status(400).json({
@@ -64,7 +68,9 @@ const updateTour = async (req, res) => {
     res.status(200).json({
       status: 'success',
       data: {
-        data: updatedTour,
+        data: {
+          updatedTour,
+        },
       },
     });
   } catch (err) {
