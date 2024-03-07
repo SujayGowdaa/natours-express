@@ -39,7 +39,7 @@ const tourSchema = new mongoose.Schema(
     },
 
     rating: Number,
-    Price: { type: Number, require: true, unique: false, default: 2000 },
+    price: { type: Number, require: true, unique: false, default: 2000 },
     startDates: [Date],
   },
   { strict: false },

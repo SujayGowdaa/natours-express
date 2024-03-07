@@ -2,14 +2,13 @@ const Tour = require('../models/tourModels');
 
 // Handling Requests
 // Tours
-
 const getAllTours = async (req, res) => {
   try {
-    // filters
+    // 1a. filters
     const { page, limit, sort, ...rest } = { ...req.query };
 
-    // advanced filters
-    let queryObj = req.query;
+    // 1b. advanced filters
+    let queryObj = rest;
     // Convert the JavaScript object `queryObj` into a JSON string representation
     // This is done to manipulate the query as a string
     queryObj = JSON.stringify(queryObj).replace(
@@ -18,8 +17,16 @@ const getAllTours = async (req, res) => {
       // Callback function to replace matched words with MongoDB query operators
       (match) => `$${match}`,
     );
-    console.log(queryObj);
-    const query = Tour.find(JSON.parse(queryObj)); // passing filters
+
+    // 2. sorting
+    // const tours = await Tour.find(JSON.parse(queryObj)).sort(req.query.sort);
+    let query = Tour.find(JSON.parse(queryObj));
+    if (req.query.sort) {
+      const sortBy = req.query.sort.replace(',', ' '); // replace method replaces comma with ' '
+      query = query.sort(sortBy);
+    } else {
+      query.sort({ maxGroupSize: 1 });
+    }
     const tours = await query;
 
     res.status(200).json({
