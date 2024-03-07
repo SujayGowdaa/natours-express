@@ -5,7 +5,7 @@ const Tour = require('../models/tourModels');
 const getAllTours = async (req, res) => {
   try {
     // 1a. filters
-    const { fields, page, limit, sort, ...rest } = { ...req.query };
+    const { fields, page = 1, limit = 3, sort, ...rest } = { ...req.query };
 
     // 1b. advanced filters
     let queryObj = rest;
@@ -39,6 +39,15 @@ const getAllTours = async (req, res) => {
       query.select('-__v'); //
     }
 
+    // 4. pagination
+    const skip = (Number(page) - 1) * Number(limit);
+    query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numOfTours = await Tour.countDocuments();
+      if (skip >= numOfTours) throw new Error('No more data');
+    }
+
     // executing query
     const tours = await query;
     res.status(200).json({
@@ -51,7 +60,7 @@ const getAllTours = async (req, res) => {
   } catch (err) {
     res.status(404).json({
       status: 'fail',
-      message: err,
+      message: err.message,
     });
   }
 };
