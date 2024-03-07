@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 // Define a Mongoose schema
+
 const tourSchema = new mongoose.Schema(
   {
     name: { type: String, require: true, unique: false },
@@ -32,7 +33,7 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'A tour must have a image'],
     },
     images: [String],
-    createdAt: { type: Date, default: Date.now() },
+    createdAt: { type: Date, default: Date.now(), select: false }, // select key - default value is true which means by default the value is reflected in the doc to hide set to false
     description: {
       type: String,
       trim: true,

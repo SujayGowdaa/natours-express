@@ -5,7 +5,7 @@ const Tour = require('../models/tourModels');
 const getAllTours = async (req, res) => {
   try {
     // 1a. filters
-    const { page, limit, sort, ...rest } = { ...req.query };
+    const { fields, page, limit, sort, ...rest } = { ...req.query };
 
     // 1b. advanced filters
     let queryObj = rest;
@@ -22,13 +22,25 @@ const getAllTours = async (req, res) => {
     // const tours = await Tour.find(JSON.parse(queryObj)).sort(req.query.sort);
     let query = Tour.find(JSON.parse(queryObj));
     if (req.query.sort) {
-      const sortBy = req.query.sort.replace(',', ' '); // replace method replaces comma with ' '
-      query = query.sort(sortBy);
+      const sortBy = req.query.sort.replace(/,/g, ' '); // replace method replaces comma with ' '
+      query.sort(sortBy);
     } else {
       query.sort({ maxGroupSize: 1 });
     }
-    const tours = await query;
 
+    // 3. field limiting - we can limit the properties shown to the user
+    if (req.query.fields) {
+      // if this is true only the properties which matches with the params will be shown
+      const fields = req.query.fields.replace(/,/g, ' ');
+      query.select(fields);
+    } else {
+      // if this is false all the properties will be shown, but since we have used minus operator "-" in the beginning of the key value this will be considered as show all the properties except the one which is included in an array.
+      // we can pass mutiple arguments in an array else just send string
+      query.select('-__v'); //
+    }
+
+    // executing query
+    const tours = await query;
     res.status(200).json({
       status: 'success',
       results: tours.length,
