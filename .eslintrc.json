@@ -15,8 +15,6 @@
     "class-methods-use-this": "off",
     "prefer-destructuring": ["error", { "object": true, "array": false }],
     "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }],
-    "engine": {
-      "node": ">=20.11.1"
-    }
+    "engine": "off"
   }
 }

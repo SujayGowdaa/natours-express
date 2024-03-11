@@ -1,4 +1,13 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable node/no-unsupported-features/es-syntax */
 const Tour = require('../models/tourModels');
+
+const getTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingAverage,price';
+  req.query.fields = 'name,price,ratingAverage,summary,difficulty';
+  next();
+};
 
 // Handling Requests
 // Tours
@@ -20,7 +29,7 @@ const getAllTours = async (req, res) => {
 
     // 2. sorting
     // const tours = await Tour.find(JSON.parse(queryObj)).sort(req.query.sort);
-    let query = Tour.find(JSON.parse(queryObj));
+    const query = Tour.find(JSON.parse(queryObj));
     if (req.query.sort) {
       const sortBy = req.query.sort.replace(/,/g, ' '); // replace method replaces comma with ' '
       query.sort(sortBy);
@@ -31,8 +40,7 @@ const getAllTours = async (req, res) => {
     // 3. field limiting - we can limit the properties shown to the user
     if (req.query.fields) {
       // if this is true only the properties which matches with the params will be shown
-      const fields = req.query.fields.replace(/,/g, ' ');
-      query.select(fields);
+      query.select(fields.replace(/,/g, ' '));
     } else {
       // if this is false all the properties will be shown, but since we have used minus operator "-" in the beginning of the key value this will be considered as show all the properties except the one which is included in an array.
       // we can pass mutiple arguments in an array else just send string
@@ -143,6 +151,7 @@ const deleteTour = async (req, res) => {
 };
 
 module.exports = {
+  getTopTours,
   getAllTours,
   getTour,
   createTour,
