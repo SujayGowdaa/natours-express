@@ -114,6 +114,51 @@ const deleteTour = async (req, res) => {
   }
 };
 
+const getTourStats = async (req, res) => {
+  try {
+    const stats = await Tour.aggregate([
+      [
+        // Stage 1: Match documents with ratingAverage >= 4.5
+        {
+          $match: { ratingAverage: { $gte: 4.5 } },
+        },
+        // Stage 2: Group documents by the uppercased difficulty field and calculate statistics
+        {
+          $group: {
+            _id: { $toUpper: '$difficulty' }, // Group by the uppercased difficulty
+            numTours: { $sum: 1 }, // Count the number of tours in each group
+            numRatings: { $sum: '$ratingQuantity' }, // Sum the rating quantities in each group
+            avgRating: { $avg: '$ratingAverage' }, // Calculate the average rating in each group
+            avgPrice: { $avg: '$price' }, // Calculate the average price in each group
+            maxPrice: { $max: '$price' }, // Find the maximum price in each group
+            minPrice: { $min: '$price' }, // Find the minimum price in each group
+          },
+        },
+        // Stage 3: Sort documents by avgPrice in descending order
+        {
+          $sort: { avgPrice: -1 }, // Sort by avgPrice in descending order
+        },
+        // // Stage 4: Match documents where _id is not 'EASY'
+        // {
+        //   $match: { _id: { $ne: 'EASY' } }, // Exclude documents with _id 'EASY'
+        // },
+      ],
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        stats,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
+
 module.exports = {
   getTopTours,
   getAllTours,
@@ -121,4 +166,5 @@ module.exports = {
   createTour,
   updateTour,
   deleteTour,
+  getTourStats,
 };
