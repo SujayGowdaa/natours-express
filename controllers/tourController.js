@@ -159,6 +159,97 @@ const getTourStats = async (req, res) => {
   }
 };
 
+const getTourByMonth = async (req, res) => {
+  try {
+    const year = Number(req.params.year);
+
+    const tours = await Tour.aggregate([
+      // Unwind the startDates array to create a document for each date
+      {
+        $unwind: '$startDates',
+      },
+
+      // Match documents with startDates within the specified year
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+
+      // Group documents by month, counting the number of tours and pushing tour names into an array
+      {
+        $group: {
+          _id: { $month: '$startDates' }, // Extract month from startDates
+          numOfTours: { $sum: 1 }, // Count number of tours
+          tours: { $push: '$name' }, // Push tour names into an array
+        },
+      },
+
+      // Sort the results by month in ascending order
+      {
+        $sort: { _id: 1 },
+      },
+
+      // Add a new field 'month' based on the month number
+      {
+        $addFields: {
+          month: {
+            $arrayElemAt: [
+              [
+                'January',
+                'February',
+                'March',
+                'April',
+                'May',
+                'June',
+                'July',
+                'August',
+                'September',
+                'October',
+                'November',
+                'December',
+              ],
+              { $subtract: ['$_id', 1] }, // Subtract 1 to match array index (January is at index 0)
+            ],
+          },
+        },
+      },
+
+      // Project stage to exclude the '_id' field
+      {
+        $project: { _id: 0 },
+      },
+
+      // // Limit stage to limit the results to 6 documents
+      // {
+      //   $limit: 6,
+      // },
+
+      // {
+      //   $sort: { numOfTours: -1 }, // When you apply two $sort aggregation stages in MongoDB aggregation pipeline, the last $sort stage will be used to sort the final output.
+      // },
+    ]);
+
+    res.status(200).json([
+      {
+        status: 'success',
+        results: tours.length,
+        data: {
+          tours,
+        },
+      },
+    ]);
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
+
 module.exports = {
   getTopTours,
   getAllTours,
@@ -167,4 +258,5 @@ module.exports = {
   updateTour,
   deleteTour,
   getTourStats,
+  getTourByMonth,
 };
