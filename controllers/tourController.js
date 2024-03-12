@@ -1,27 +1,27 @@
-const Tour = require('../models/tourModels');
-const APIFeatures = require('../utils/apiFeature');
+const Tour = require('../models/tourModels'); // Import the Tour model
+const APIFeatures = require('../utils/apiFeature'); // Import the APIFeatures utility
 
-// Handling Requests
-// Top tours
-
+// Middleware to get top tours
 const getTopTours = (req, res, next) => {
+  // Set query parameters to get top tours
   req.query.limit = '5';
   req.query.sort = '-ratingAverage,price';
   req.query.fields = 'name,price,ratingAverage,summary,difficulty';
-  next();
+  next(); // Call the next middleware
 };
 
-// Tours
+// Controller function to get all tours
 const getAllTours = async (req, res) => {
   try {
-    // executing query
+    // Execute query using APIFeatures utility
     const features = new APIFeatures(Tour.find(), req.query)
       .filter()
       .sort()
       .limitFields()
       .pagination();
-    const tours = await features.query;
+    const tours = await features.query; // Await the query execution
 
+    // Send response with tours data
     res.status(200).json({
       status: 'success',
       results: tours.length,
@@ -30,6 +30,7 @@ const getAllTours = async (req, res) => {
       },
     });
   } catch (err) {
+    // Handle error if query fails
     res.status(404).json({
       status: 'fail',
       message: err.message,
@@ -37,10 +38,12 @@ const getAllTours = async (req, res) => {
   }
 };
 
+// Controller function to get a single tour by ID
 const getTour = async (req, res) => {
   try {
-    const tour = await Tour.findById(req.params.id); // findyID is a short hand of findOne()
-    // to make the same request using findOne() method = Tour.findOne({_id:req.params.id})
+    // Find tour by ID
+    const tour = await Tour.findById(req.params.id);
+    // Send response with tour data
     res.status(200).json({
       status: 'success',
       data: {
@@ -48,6 +51,7 @@ const getTour = async (req, res) => {
       },
     });
   } catch (err) {
+    // Handle error if tour is not found
     res.status(404).json({
       status: 'fail',
       message: err,
@@ -55,12 +59,12 @@ const getTour = async (req, res) => {
   }
 };
 
+// Controller function to create a new tour
 const createTour = async (req, res) => {
-  // 2 ways to create data
-  // const newTour = new Tour({});
-  // newTour.save();
   try {
+    // Create new tour
     const newTour = await Tour.create(req.body);
+    // Send response with new tour data
     res.status(201).json({
       status: 'success',
       data: {
@@ -68,6 +72,7 @@ const createTour = async (req, res) => {
       },
     });
   } catch (err) {
+    // Handle error if creation fails
     res.status(400).json({
       status: 'fail',
       message: err,
@@ -75,21 +80,23 @@ const createTour = async (req, res) => {
   }
 };
 
+// Controller function to update a tour by ID
 const updateTour = async (req, res) => {
   try {
+    // Update tour by ID
     const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
-      new: true, // Return the updated document after the update operation
-      runValidators: true, // Run validators (specified in the schema) on the updated data
+      new: true, // Return updated document after update operation
+      runValidators: true, // Run validators on updated data
     });
+    // Send response with updated tour data
     res.status(200).json({
       status: 'success',
       data: {
-        data: {
-          updatedTour,
-        },
+        updatedTour,
       },
     });
   } catch (err) {
+    // Handle error if update fails
     res.status(400).json({
       status: 'fail',
       message: err,
@@ -97,9 +104,12 @@ const updateTour = async (req, res) => {
   }
 };
 
+// Controller function to delete a tour by ID
 const deleteTour = async (req, res) => {
   try {
+    // Delete tour by ID
     await Tour.findByIdAndDelete(req.params.id);
+    // Send response with success message
     res.status(204).json({
       status: 'success',
       data: {
@@ -107,6 +117,7 @@ const deleteTour = async (req, res) => {
       },
     });
   } catch (err) {
+    // Handle error if deletion fails
     res.status(400).json({
       status: 'fail',
       message: err,
@@ -114,37 +125,34 @@ const deleteTour = async (req, res) => {
   }
 };
 
+// Controller function to get tour statistics
 const getTourStats = async (req, res) => {
   try {
+    // Aggregate tour data to get statistics
     const stats = await Tour.aggregate([
-      [
-        // Stage 1: Match documents with ratingAverage >= 4.5
-        {
-          $match: { ratingAverage: { $gte: 4.5 } },
+      // Stage 1: Match documents with ratingAverage >= 4.5
+      {
+        $match: { ratingAverage: { $gte: 4.5 } },
+      },
+      // Stage 2: Group documents by the uppercased difficulty field and calculate statistics
+      {
+        $group: {
+          _id: { $toUpper: '$difficulty' },
+          numTours: { $sum: 1 },
+          numRatings: { $sum: '$ratingQuantity' },
+          avgRating: { $avg: '$ratingAverage' },
+          avgPrice: { $avg: '$price' },
+          maxPrice: { $max: '$price' },
+          minPrice: { $min: '$price' },
         },
-        // Stage 2: Group documents by the uppercased difficulty field and calculate statistics
-        {
-          $group: {
-            _id: { $toUpper: '$difficulty' }, // Group by the uppercased difficulty
-            numTours: { $sum: 1 }, // Count the number of tours in each group
-            numRatings: { $sum: '$ratingQuantity' }, // Sum the rating quantities in each group
-            avgRating: { $avg: '$ratingAverage' }, // Calculate the average rating in each group
-            avgPrice: { $avg: '$price' }, // Calculate the average price in each group
-            maxPrice: { $max: '$price' }, // Find the maximum price in each group
-            minPrice: { $min: '$price' }, // Find the minimum price in each group
-          },
-        },
-        // Stage 3: Sort documents by avgPrice in descending order
-        {
-          $sort: { avgPrice: -1 }, // Sort by avgPrice in descending order
-        },
-        // // Stage 4: Match documents where _id is not 'EASY'
-        // {
-        //   $match: { _id: { $ne: 'EASY' } }, // Exclude documents with _id 'EASY'
-        // },
-      ],
+      },
+      // Stage 3: Sort documents by avgPrice in descending order
+      {
+        $sort: { avgPrice: -1 },
+      },
     ]);
 
+    // Send response with statistics data
     res.status(200).json({
       status: 'success',
       data: {
@@ -152,6 +160,7 @@ const getTourStats = async (req, res) => {
       },
     });
   } catch (err) {
+    // Handle error if aggregation fails
     res.status(400).json({
       status: 'fail',
       message: err,
@@ -159,6 +168,7 @@ const getTourStats = async (req, res) => {
   }
 };
 
+// Controller function to get tours by month
 const getTourByMonth = async (req, res) => {
   try {
     const year = Number(req.params.year);
@@ -215,6 +225,8 @@ const getTourByMonth = async (req, res) => {
               { $subtract: ['$_id', 1] }, // Subtract 1 to match array index (January is at index 0)
             ],
           },
+
+          durationWeeks: '$durationWeeks', // Access the virtual field in the aggregation pipeline
         },
       },
 

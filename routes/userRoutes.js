@@ -5,11 +5,12 @@ const {
   createUser,
   updateUser,
   deleteUser,
-} = require('../controllers/userController');
+} = require('../controllers/userController'); // Import controller functions
 
-const router = express.Router();
+const router = express.Router(); // Create a router instance
 
-router.route('/').get(getAllUsers).post(createUser);
-router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
+// Define routes and corresponding controller functions
+router.route('/').get(getAllUsers).post(createUser); // Route to get all users or create a new user
+router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser); // Route to get, update, or delete a specific user
 
-module.exports = router;
+module.exports = router; // Export the router
