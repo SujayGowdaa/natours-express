@@ -50,8 +50,13 @@ const tourSchema = new mongoose.Schema(
     },
     rating: Number, // Overall rating of the tour
     price: { type: Number, require: true, unique: false, default: 2000 }, // Price of the tour
-    startDates: [Date], // Array of start dates for the tour
+    startDates: [Date], // Array of start dates for the
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
+
   {
     toJSON: { virtuals: true }, // Include virtual properties when converting to JSON
     toObject: { virtuals: true }, // Include virtual properties when converting to a regular JavaScript object
@@ -65,7 +70,10 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7; // Calculate duration in weeks
 });
 
-// Document Middlware: only works for .save(), and .create() method, and it doesn't run on any other methods. It runs before saving new doc
+// Document Middlware:
+// only runs for .save(), and.create() method, and it doesn't run on any other methods. It runs before saving new doc.
+// These middleware functions are executed on specific document operations such as save, validate, remove, and init. They are defined using schema.pre() and schema.post() methods. Document middleware functions have access to the document being operated on (this) and can perform tasks like data validation, modification, or logging before or after the operation.
+
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true }); // To generate a slug for the tour before saving
   // console.log('saving document step 1');
@@ -83,6 +91,22 @@ tourSchema.pre('save', function (next) {
 //   console.log(doc);
 //   next(); // Calls the next middleware in the middleware chain
 // });
+
+// Query Middleware
+// Query middleware functions are executed before or after executing a query. They are defined using schema.pre() and schema.post() methods with the query hook as the first argument (e.g., find, findOne, updateOne). Query middleware functions have access to the query object and can modify the query parameters, perform logging, or execute additional logic.
+
+tourSchema.pre(/^find/, function (next) {
+  // when we use expression like this for eg: /^find/. This middleware runs for all the commands starts with find name for eg: findOne, findById etc...
+  this.find({ secretTour: { $ne: true } });
+  this.start = Date.now();
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  console.log(`Query took ${Date.now() - this.start} milliseconds`);
+  console.log(docs);
+  next();
+});
 
 // Create a Mongoose model based on the schema
 const Tour = mongoose.model('Tour', tourSchema);
