@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
+const { default: slugify } = require('slugify');
 
 // Define a Mongoose schema for tours
 const tourSchema = new mongoose.Schema(
   {
     name: { type: String, require: true, unique: false }, // Tour name
+    slug: {
+      type: String,
+    },
     duration: { type: Number, required: [true, 'A tour must have a duration'] }, // Duration of the tour in days
     maxGroupSize: {
       // Maximum group size for the tour
@@ -60,6 +64,25 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7; // Calculate duration in weeks
 });
+
+// Document Middlware: only works for .save(), and .create() method, and it doesn't run on any other methods. It runs before saving new doc
+tourSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true }); // To generate a slug for the tour before saving
+  // console.log('saving document step 1');
+  next(); // Calls the next middleware in the middleware chain
+});
+
+// // It runs before saving new doc but only after previous middleware in the stack
+// tourSchema.pre('save', function (next) {
+//   this.slug = slugify(this.name, { lower: true });
+//   console.log('saving document step 2');
+//   next(); // Calls the next middleware in the middleware chain
+// });
+
+// tourSchema.post('save', (doc, next) => {
+//   console.log(doc);
+//   next(); // Calls the next middleware in the middleware chain
+// });
 
 // Create a Mongoose model based on the schema
 const Tour = mongoose.model('Tour', tourSchema);
