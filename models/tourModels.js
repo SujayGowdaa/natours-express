@@ -4,7 +4,14 @@ const { default: slugify } = require('slugify');
 // Define a Mongoose schema for tours
 const tourSchema = new mongoose.Schema(
   {
-    name: { type: String, require: true, unique: false }, // Tour name
+    name: {
+      type: String,
+      require: true,
+      unique: true,
+      trim: true,
+      minlength: [10, 'A tour name must have above or equal to 10 characters'],
+      maxlength: [50, 'A tour name must have below or equal to 50 characters'],
+    }, // Tour name
     slug: {
       type: String,
     },
@@ -18,11 +25,19 @@ const tourSchema = new mongoose.Schema(
       // Difficulty level of the tour
       type: String,
       required: [true, 'A tour must have a difficulty'],
+      lowercase: true,
+      trim: true,
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: "The values should be either 'easy', 'medium' or 'difficult",
+      },
     },
     ratingAverage: {
       // Average rating of the tour
       type: Number,
       default: 4.5,
+      min: [1.0, 'The rating should be above or equal to 1.0'],
+      max: [5.0, 'The rating should be below or equal to 5.0'],
     },
     ratingQuantity: {
       // Number of ratings for the tour
