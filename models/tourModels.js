@@ -44,7 +44,23 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    priceDiscount: Number, // Discounted price for the tour
+    price: { type: Number, require: true, unique: false, default: 2000 }, // Price of the tour
+    priceDiscount: {
+      type: Number,
+      // validate: {
+      //   validator: function (val) {
+      //     return val < this.price;
+      //   },
+      //   message: 'priceDiscount cannot be greater than price',
+      // },
+      validate: [
+        // Important: This validator only work while creating new doc because "this" points to doc on new doc creation only.
+        function (val) {
+          return val < this.price;
+        },
+        `priceDiscount cannot be greater than price ({VALUE})`,
+      ],
+    }, // Discounted price for the tour
     summary: {
       // Summary description of the tour
       type: String,
@@ -64,7 +80,7 @@ const tourSchema = new mongoose.Schema(
       trim: true,
     },
     rating: Number, // Overall rating of the tour
-    price: { type: Number, require: true, unique: false, default: 2000 }, // Price of the tour
+
     startDates: [Date], // Array of start dates for the
     secretTour: {
       type: Boolean,
