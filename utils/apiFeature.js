@@ -8,7 +8,7 @@ class APIFeatures {
     const {
       fields,
       page = 1,
-      limit = 3,
+      limit = 12,
       sort,
       ...rest
     } = { ...this.queryString };

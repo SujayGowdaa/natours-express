@@ -104,7 +104,22 @@ tourSchema.pre(/^find/, function (next) {
 
 tourSchema.post(/^find/, function (docs, next) {
   console.log(`Query took ${Date.now() - this.start} milliseconds`);
-  console.log(docs);
+  // console.log(docs);
+  next();
+});
+
+// Aggregation Middleware
+// Aggregate middleware functions allow interception of aggregate function calls. They are defined using schema.pre() and schema.post() methods with the aggregate hook. Aggregate middleware functions have access to the aggregation pipeline and can modify the pipeline stages, perform logging, or execute additional logic before or after aggregation.
+
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({
+    $match: {
+      secretTour: {
+        $ne: true,
+      },
+    },
+  });
+  console.log(this.pipeline());
   next();
 });
 
