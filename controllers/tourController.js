@@ -1,5 +1,6 @@
 const Tour = require('../models/tourModels'); // Import the Tour model
 const APIFeatures = require('../utils/apiFeature'); // Import the APIFeatures utility
+const AppError = require('../utils/appError');
 
 // Middleware to get top tours
 const getTopTours = (req, res, next) => {
@@ -11,9 +12,10 @@ const getTopTours = (req, res, next) => {
 };
 
 // Controller function to get all tours
-const getAllTours = async (req, res) => {
+const getAllTours = async (req, res, next) => {
   try {
     // Execute query using APIFeatures utility
+
     const features = new APIFeatures(Tour.find(), req.query)
       .filter()
       .sort()
@@ -31,19 +33,22 @@ const getAllTours = async (req, res) => {
       },
     });
   } catch (err) {
-    // Handle error if query fails
-    res.status(404).json({
-      status: 'fail',
-      message: err.message,
-    });
+    next(err);
   }
 };
 
 // Controller function to get a single tour by ID
-const getTour = async (req, res) => {
+const getTour = async (req, res, next) => {
   try {
     // Find tour by ID
     const tour = await Tour.findById(req.params.id);
+
+    if (!tour) {
+      return next(
+        new AppError(`No data found for the ID: ${req.params.id}`, 404),
+      );
+    }
+
     // Send response with tour data
     res.status(200).json({
       status: 'success',
@@ -52,19 +57,22 @@ const getTour = async (req, res) => {
       },
     });
   } catch (err) {
-    // Handle error if tour is not found
-    res.status(404).json({
-      status: 'fail',
-      message: err,
-    });
+    next(err);
   }
 };
 
 // Controller function to create a new tour
-const createTour = async (req, res) => {
+const createTour = async (req, res, next) => {
   try {
     // Create new tour
     const newTour = await Tour.create(req.body);
+
+    if (!newTour) {
+      return next(
+        new AppError(`No data found for the ID: ${req.params.id}`, 404),
+      );
+    }
+
     // Send response with new tour data
     res.status(201).json({
       status: 'success',
@@ -73,22 +81,25 @@ const createTour = async (req, res) => {
       },
     });
   } catch (err) {
-    // Handle error if creation fails
-    res.status(400).json({
-      status: 'fail',
-      message: err,
-    });
+    next(err);
   }
 };
 
 // Controller function to update a tour by ID
-const updateTour = async (req, res) => {
+const updateTour = async (req, res, next) => {
   try {
     // Update tour by ID
     const updatedTour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
       new: true, // Return updated document after update operation
       runValidators: true, // Run validators on updated data
     });
+
+    if (!updatedTour) {
+      return next(
+        new AppError(`No data found for the ID: ${req.params.id}`, 404),
+      );
+    }
+
     // Send response with updated tour data
     res.status(200).json({
       status: 'success',
@@ -97,19 +108,21 @@ const updateTour = async (req, res) => {
       },
     });
   } catch (err) {
-    // Handle error if update fails
-    res.status(400).json({
-      status: 'fail',
-      message: err,
-    });
+    next(err);
   }
 };
 
 // Controller function to delete a tour by ID
-const deleteTour = async (req, res) => {
+const deleteTour = async (req, res, next) => {
   try {
     // Delete tour by ID
-    await Tour.findByIdAndDelete(req.params.id);
+    const tour = await Tour.findByIdAndDelete(req.params.id);
+
+    if (!tour) {
+      return next(
+        new AppError(`No data found for the ID: ${req.params.id}`, 404),
+      );
+    }
     // Send response with success message
     res.status(204).json({
       status: 'success',
@@ -118,16 +131,12 @@ const deleteTour = async (req, res) => {
       },
     });
   } catch (err) {
-    // Handle error if deletion fails
-    res.status(400).json({
-      status: 'fail',
-      message: err,
-    });
+    next(err);
   }
 };
 
 // Controller function to get tour statistics
-const getTourStats = async (req, res) => {
+const getTourStats = async (req, res, next) => {
   try {
     // Aggregate tour data to get statistics
     const stats = await Tour.aggregate([
@@ -161,16 +170,12 @@ const getTourStats = async (req, res) => {
       },
     });
   } catch (err) {
-    // Handle error if aggregation fails
-    res.status(400).json({
-      status: 'fail',
-      message: err,
-    });
+    next(err);
   }
 };
 
 // Controller function to get tours by month
-const getTourByMonth = async (req, res) => {
+const getTourByMonth = async (req, res, next) => {
   try {
     const year = Number(req.params.year);
 
@@ -256,10 +261,7 @@ const getTourByMonth = async (req, res) => {
       },
     ]);
   } catch (err) {
-    res.status(400).json({
-      status: 'fail',
-      message: err,
-    });
+    next(err);
   }
 };
 

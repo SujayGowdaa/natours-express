@@ -32,10 +32,8 @@ app.all('*', (req, res, next) => {
   next(err); // Call the error-handling middleware to handle the error with an error object
   // Important: when we pass an arguments to next(err) doesn't matter whatever it is, express will automatically know its an error and skips all other middleware functions in the stack and executes global error handling middleware.
 */
-
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
-
 app.use(globalErrorHandler);
 
 module.exports = app; // Export the Express application
