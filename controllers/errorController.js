@@ -42,19 +42,20 @@ const sendErrorProd = (err, res) => {
 // eslint-disable-next-line arrow-body-style
 const sendErrorDev = (err, res) => {
   // Send error response with the appropriate status code and error message
-  console.log(err);
   res.status(err.statusCode).json({
     status: err.status,
+    error: err,
     message: err.message,
-    err: err,
     stack: err.stack,
-    isOperational: err.isOperational,
   });
 };
 
 // Middleware function to handle errors globally. Express with four arguments will automatically recognizes it as an error handling middleware.So it only be called if there is an error.
 // Global error handling middleware for Express applications
 const globalErrorHandler = (err, req, res, next) => {
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
+
   // Check if the environment is set to development
   if (process.env.NODE_ENV === 'development') {
     // Send detailed error information in the development environment
