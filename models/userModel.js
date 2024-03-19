@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please enter your password'],
     minlength: 8,
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -56,6 +57,15 @@ userSchema.pre('save', async function (next) {
   // Proceed to the next middleware in the stack
   next();
 });
+
+// Define a custom instance method `checkPassword` on the user schema
+userSchema.methods.checkPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
+  // Use bcrypt.compare to compare the candidate password with the hashed user password
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;

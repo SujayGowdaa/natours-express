@@ -6,11 +6,12 @@ const {
   updateUser,
   deleteUser,
 } = require('../controllers/userController'); // Import controller functions
-const { signup } = require('../controllers/authController');
+const { signup, login } = require('../controllers/authController');
 
 const router = express.Router(); // Create a router instance
 
 router.post('/signup', signup);
+router.post('/login', login);
 
 // Define routes and corresponding controller functions
 router.route('/').get(getAllUsers).post(createUser); // Route to get all users or create a new user
