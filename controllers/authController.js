@@ -68,7 +68,35 @@ const login = async (req, res, next) => {
   });
 };
 
+const protect = async (req, res, next) => {
+  // 1. Getting token and check if it's there
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    // If the request header contains an authorization token starting with 'Bearer',
+    // extract the token from the header
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  // If no token is found, return an error using the AppError middleware with a status code of 401 (Unauthorized)
+  if (!token) {
+    return next(new AppError('Please log in to get access!', 401));
+  }
+
+  // 2. Verify token
+
+  // 3. Check if user still exists
+
+  // 4. Check if user changed password after the token was issued
+
+  // If the token is valid and all checks pass, call the next middleware function
+  next();
+};
+
 module.exports = {
   signup,
   login,
+  protect,
 };

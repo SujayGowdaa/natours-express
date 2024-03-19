@@ -19,6 +19,11 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json()); // Parse incoming request body as JSON
 app.use(express.static(`${__dirname}/public/`)); // Serve static files from the 'public' directory
 
+app.use((req, res, next) => {
+  console.log(req.headers);
+  next();
+});
+
 // Define routes
 app.use('/api/v1/tours', tourRoutes); // Use tour routes for requests starting with '/api/v1/tours'
 app.use('/api/v1/users', userRoutes); // Use user routes for requests starting with '/api/v1/users'
