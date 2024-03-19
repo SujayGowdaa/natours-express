@@ -38,6 +38,10 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// Salting: Salting is the process of adding random data (called a salt) to the input before it is hashed. The salt is typically a random string of characters unique to each password. By adding a salt to each password before hashing, even if two users have the same password, their hashed values will be different because of the unique salt.
+
+// Hashing: Hashing is the process of converting an input (such as a password) into a fixed-size string of characters using a cryptographic hash function. The resulting hash is unique to the input, meaning that even small changes in the input will produce drastically different hash values.
+
 // Middleware function to hash the password before saving the user document
 userSchema.pre('save', async function (next) {
   // Check if the password field has been modified
