@@ -16,6 +16,16 @@ const handleValidationDB = (err) => {
   return new AppError(message, 400);
 };
 
+const handleJsonWebTokenError = () => {
+  const message = 'Invalid token. Please login again';
+  return new AppError(message, 401);
+};
+
+const handleTokenExpiredError = () => {
+  const message = 'Token expired login again!';
+  return new AppError(message, 401);
+};
+
 const sendErrorProd = (err, res) => {
   // Operational, trusted error: send message to the client
   if (err.isOperational) {
@@ -73,6 +83,12 @@ const globalErrorHandler = (err, req, res, next) => {
 
     // Handle Validation error of MongoDB schema
     if (error.name === 'ValidationError') error = handleValidationDB(error);
+
+    if (error.name === 'JsonWebTokenError')
+      error = handleJsonWebTokenError(error);
+
+    if (error.name === 'TokenExpiredError')
+      error = handleTokenExpiredError(error);
 
     // Send concise error information in the production environment
     sendErrorProd(error, res);

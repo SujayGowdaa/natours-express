@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
       message: 'Password not matching',
     },
   },
+  passwordChangedAt: Date,
 });
 
 // Salting: Salting is the process of adding random data (called a salt) to the input before it is hashed. The salt is typically a random string of characters unique to each password. By adding a salt to each password before hashing, even if two users have the same password, their hashed values will be different because of the unique salt.
@@ -66,6 +67,25 @@ userSchema.methods.checkPassword = async function (
   // Use bcrypt.compare to compare the candidate password with the hashed user password
   return await bcrypt.compare(candidatePassword, userPassword);
 };
+
+/**
+ * Check if the user has changed their password after a given timestamp.
+ * @param {number} JWTTimestamp The timestamp from the JWT token.
+ * @returns {boolean} Returns true if the password was changed after the provided timestamp, false otherwise.
+ */
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  // Check if the user's password has been changed
+  if (this.passwordChangedAt) {
+    // Convert the passwordChangedAt timestamp to seconds
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
+    // Compare the JWT timestamp with the password changed timestamp
+    return JWTTimestamp < changedTimestamp;
+  }
+  // Return
+
 
 const User = mongoose.model('User', userSchema);
 module.exports = User;
