@@ -23,6 +23,7 @@ const signup = async (req, res, next) => {
       email: req.body.email,
       password: req.body.password,
       passwordConfirm: req.body.passwordConfirm,
+      role: req.body.role,
     });
 
     // Generate a JWT token for the newly registered user
@@ -119,8 +120,21 @@ const protect = async (req, res, next) => {
   }
 };
 
+const restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403),
+      );
+    }
+
+    next();
+  };
+
 module.exports = {
   signup,
   login,
   protect,
+  restrictTo,
 };

@@ -14,6 +14,11 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email'],
   },
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    default: 'user',
+  },
   photo: {
     type: String,
   },
@@ -84,8 +89,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     // Compare the JWT timestamp with the password changed timestamp
     return JWTTimestamp < changedTimestamp;
   }
-  // Return
-
-
+  return false;
+};
 const User = mongoose.model('User', userSchema);
 module.exports = User;
